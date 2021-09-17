@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 from skimage.filters import sobel
+from PIL import Image
+from skimage.transform import rotate
+from tqdm import tqdm
 
 BASE_DIR = '/Users/mlghost/Downloads/archive/train/'
 names = os.listdir(BASE_DIR)
@@ -10,46 +13,67 @@ names = os.listdir(BASE_DIR)
 # reading patients information and splitting into (id, image_name,label,patient_name)
 label = [line.split() for line in open('/Users/mlghost/Downloads/archive/train.txt')]
 df = pd.DataFrame(data=label, columns=['id', 'image_name', 'label', 'patient_name'])
-
-pixel_number = []
-for i in range(len(df)):
+os.makedirs('./dataset/', exist_ok=True)
+aug_data = []
+anomaly_data = []
+for i in tqdm(range(len(df))):
     try:
         image_name = df.iloc[i]['image_name']
         image = plt.imread(BASE_DIR + image_name)
-        pixel_number.append(image.shape[0] * image.shape[1])
+
+        S = image.shape
+        if len(S) > 2:
+            # converting the RGB and RGBA images to grayscale
+            image = image.mean(axis=-1)
+
+        # Central Cropping
+
+        H, W = image.shape
+
+        cl, cr, cb = 0.085, 0.085, 0.2
+
+        cropped_image = image[0:-int(cb * H), int(cl * W):-int(cr * W)]
+
+        CH, CW = 400, 400
+
+        resized = np.array(Image.fromarray(cropped_image).resize((CH, CW)))
+        plt.imsave('./dataset/' + image_name, resized, cmap='gray')
+        aug_data.append([image_name, df.iloc[i]['label']])
+
+        if df.iloc[i]['label'] == 'positive':
+            _90 = rotate(image, 90)
+            _180 = rotate(image, 180)
+            _270 = rotate(image, 270)
+            vf = image[:, ::-1]
+            hf = image[::-1, :]
+            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_90.png', _90, cmap='gray')
+            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_180.png', _180, cmap='gray')
+            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_270.png', _270, cmap='gray')
+            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_vf.png', vf, cmap='gray')
+            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_hf.png', hf, cmap='gray')
+
+            aug_data.append([image_name[:image_name.index('.')] + '_90.png', df.iloc[i]['label']])
+            aug_data.append([image_name[:image_name.index('.')] + '_180.png', df.iloc[i]['label']])
+            aug_data.append([image_name[:image_name.index('.')] + '_270.png', df.iloc[i]['label']])
+            aug_data.append([image_name[:image_name.index('.')] + '_vf.png', df.iloc[i]['label']])
+            aug_data.append([image_name[:image_name.index('.')] + '_hf.png', df.iloc[i]['label']])
+
     except Exception:
-        print(image_name)
-plt.hist(pixel_number,bins=4)
-plt.show()
+        anomaly_data.append(df.iloc[i].values)
 
 
-# # for i in range(len(df)):
-# #     image_name = df.iloc[i]['image_name']
-# #     image = plt.imread(BASE_DIR + image_name)
-# #     print(image.shape)
-#
-# pos_data = df[df['label'] == 'positive']
-# neg_data = df[df['label'] == 'negative']
-#
-# fig, ax = plt.subplots(2, 5)
-# os.makedirs('samples/',exist_ok=True)
-# for i in range(5):
-#     image_name = pos_data.iloc[i]['image_name']
-#     image = plt.imread(BASE_DIR + image_name)
-#     # plt.imsave('./samples/pos_' + str(i) + '.png', image)
-#     ax[0][i].imshow(image)
-#     ax[0][i].axis('off')
-#
-# for i in range(5):
-#     image_name = neg_data.iloc[40 + i]['image_name']
-#     image = plt.imread(BASE_DIR + image_name)
-#     # plt.imsave('./samples/neg_' + str(i) + '.png', image)
-#     ax[1][i].imshow(image)
-#     ax[1][i].axis('off')
-#     # plt.imsave(str(i)+'.png', sobel(image))
-# plt.show()
-"""
-90,180,270 + original + flipping = 2158*6
+    # plt.imshow(sobel(resized))
+    # plt.show()
 
-13000 + 13000 = 26000
-"""
+
+aug_df = pd.DataFrame(aug_data,columns=['name','label'])
+aug_df.to_csv('aug.csv',index=False)
+
+anomaly_df = pd.DataFrame(anomaly_data,columns=['id', 'image_name', 'label', 'patient_name'])
+anomaly_df.to_csv('anomaly.csv',index=False)
+
+
+
+
+    # plt.imshow(image)
+    # plt.show()
