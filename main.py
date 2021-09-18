@@ -40,23 +40,23 @@ for i in tqdm(range(len(df))):
         plt.imsave('./dataset/' + image_name, resized, cmap='gray')
         aug_data.append([image_name, df.iloc[i]['label']])
 
-        if df.iloc[i]['label'] == 'positive':
-            _90 = rotate(image, 90)
-            _180 = rotate(image, 180)
-            _270 = rotate(image, 270)
-            vf = image[:, ::-1]
-            hf = image[::-1, :]
-            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_90.png', _90, cmap='gray')
-            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_180.png', _180, cmap='gray')
-            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_270.png', _270, cmap='gray')
-            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_vf.png', vf, cmap='gray')
-            plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_hf.png', hf, cmap='gray')
-
-            aug_data.append([image_name[:image_name.index('.')] + '_90.png', df.iloc[i]['label']])
-            aug_data.append([image_name[:image_name.index('.')] + '_180.png', df.iloc[i]['label']])
-            aug_data.append([image_name[:image_name.index('.')] + '_270.png', df.iloc[i]['label']])
-            aug_data.append([image_name[:image_name.index('.')] + '_vf.png', df.iloc[i]['label']])
-            aug_data.append([image_name[:image_name.index('.')] + '_hf.png', df.iloc[i]['label']])
+        # if df.iloc[i]['label'] == 'positive':
+        #     _90 = rotate(image, 90)
+        #     _180 = rotate(image, 180)
+        #     _270 = rotate(image, 270)
+        #     vf = image[:, ::-1]
+        #     hf = image[::-1, :]
+        #     plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_90.png', _90, cmap='gray')
+        #     plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_180.png', _180, cmap='gray')
+        #     plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_270.png', _270, cmap='gray')
+        #     plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_vf.png', vf, cmap='gray')
+        #     plt.imsave('./dataset/' + image_name[:image_name.index('.')] + '_hf.png', hf, cmap='gray')
+        #
+        #     aug_data.append([image_name[:image_name.index('.')] + '_90.png', df.iloc[i]['label']])
+        #     aug_data.append([image_name[:image_name.index('.')] + '_180.png', df.iloc[i]['label']])
+        #     aug_data.append([image_name[:image_name.index('.')] + '_270.png', df.iloc[i]['label']])
+        #     aug_data.append([image_name[:image_name.index('.')] + '_vf.png', df.iloc[i]['label']])
+        #     aug_data.append([image_name[:image_name.index('.')] + '_hf.png', df.iloc[i]['label']])
 
     except Exception:
         anomaly_data.append(df.iloc[i].values)
